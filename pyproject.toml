@@ -1,0 +1,75 @@
+[build-system]
+requires = ["setuptools>=82.0.1"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["darkelf_cli*"]
+
+[project]
+name = "darkelf-cli"
+version = "1.0.0"
+description = "Darkelf CLI — Secure, privacy-focused command-line web browser"
+
+authors = [
+    { name = "Dr. Kevin Moore" }
+]
+
+readme = "README.md"
+license = { file = "LICENSE.md" }
+
+requires-python = ">=3.11"
+
+dependencies = [
+    "requests>=2.32",
+    "beautifulsoup4>=4.12",
+    "rich>=13.9",
+]
+
+keywords = [
+    "browser",
+    "cli",
+    "privacy",
+    "security",
+    "terminal",
+    "osint",
+    "duckduckgo",
+]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+
+    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+
+    "Environment :: Console",
+
+    "Topic :: Internet :: WWW/HTTP :: Browsers",
+    "Topic :: Security",
+]
+
+[project.urls]
+Homepage = "https://github.com/Darkelf2024/darkelf-cli"
+Repository = "https://github.com/Darkelf2024/darkelf-cli"
+
+[project.scripts]
+darkelf-cli = "darkelf_cli:main"
+
+[tool.ruff]
+line-length = 127
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F"]
+
+[tool.ruff.lint.per-file-ignores]
+"main.py" = ["E402"]
