@@ -11,7 +11,7 @@ include = ["darkelf_cli*"]
 
 [project]
 name = "darkelf-cli"
-version = "1.0.1"
+version = "1.0.2"
 description = "Darkelf CLI — Secure, privacy-focused command-line web browser"
 
 authors = [
