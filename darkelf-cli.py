@@ -69,14 +69,10 @@ import secrets
 import subprocess  # nosec B404
 import time
 import re
-import random
-import html
 import hashlib
 import logging
-import argparse
 import shutil
 import signal
-import platform
 import termios
 import tty
 import textwrap
@@ -90,13 +86,10 @@ from rich.text import Text
 from rich.rule import Rule
 from rich.align import Align
 from rich.table import Table
-from rich.layout import Layout
-from rich import box
-from rich.console import Console
 from rich.prompt import Prompt
 from urllib.parse import quote_plus
 
-from urllib.parse import quote_plus, parse_qs, urlparse, unquote, urljoin
+from urllib.parse import parse_qs, urlparse, unquote, urljoin
 
 console = Console()
 
@@ -109,8 +102,11 @@ SEARCH_ENDPOINTS = [
     "https://duckduckgo.com/lite/",
 ]
 
-def run(self):
+def run(self, session=None):
     console.print("[bold green]Darkelf CLI Browser[/bold green]\n")
+    
+    if session is None:
+        session = requests.Session()
 
     while True:
         try:
@@ -279,7 +275,6 @@ def random_delay(extra_stealth_options=None):
 def fetch_with_requests(
     url, session=None, extra_stealth_options=None, debug=False, method="GET", data=None
 ):
-    proxies = None
     headers = random_headers(extra_stealth_options)
     try:
         random_delay(extra_stealth_options)
@@ -310,7 +305,7 @@ def fetch_with_requests(
         console.print(f"[red]Network error during fetch: {e}[/red]")
         # Optionally, return a blank page or raise a custom error
         return "<html><p>[Network error]</p></html>", headers
-    except Exception as e:
+    except Exception:
         # Only wipe for actual intrusion, not for network errors!
         return "<html>Error</html>", headers
 
@@ -542,20 +537,34 @@ def ensure_strong_entropy(min_bytes=256):
 
 
 # 2. === Session Isolation Wrapper ===
-def fetch_with_isolated_session(url, method="GET", headers=None, data=None, timeout=30):
+def fetch_with_isolated_session(
+    url, method="GET", headers=None, data=None, timeout=30
+):
     session = requests.Session()  # New session per call
-    proxies = {"http": get_tor_proxy(), "https": get_tor_proxy()}
+
     try:
         if method == "POST":
             resp = session.post(
-                url, headers=headers, data=data, proxies=proxies, timeout=timeout
+                url,
+                headers=headers,
+                data=data,
+                timeout=timeout,
             )
         else:
-            resp = session.get(url, headers=headers, proxies=proxies, timeout=timeout)
+            resp = session.get(
+                url,
+                headers=headers,
+                timeout=timeout,
+            )
+
         resp.raise_for_status()
         return resp.text, resp.headers
+
     except Exception as e:
         return f"[ERROR] {e}", {}
+
+    finally:
+        session.close()
 
 
 # Ensure entropy at program start
@@ -837,7 +846,9 @@ class DarkelfCLIBrowser:
                 continue
             if line.strip().startswith("[") and "]" in line:
                 try:
-                    num = int(line.strip().split("]")[0][1:])
+                    # Validate that the line starts with a numeric link index.
+                    int(line.strip().split("]")[0][1:])
+
                     wrapped.append(Text(line, style=f"underline {self.theme['link']}"))
                     wrapped.append(Text("", style=self.theme["content"]))
                     continue
@@ -1552,21 +1563,6 @@ def repl_main():
                     session=session,
                     extra_stealth_options=extra_stealth_options if stealth_on else {},
                 )
-
-            # --- ONION DISCOVERY ---
-            elif cmd.startswith("findonions "):
-                keywords = cmd.split(" ", 1)[1]
-                onion_discovery(
-                    keywords,
-                    extra_stealth_options=extra_stealth_options if stealth_on else {},
-                )
-
-            # --- TOR CONTROL ---
-            elif cmd == "tornew":
-                renew_tor_identity()
-
-            elif cmd == "checkip":
-                check_my_ip()
 
             # --- STEALTH TOGGLE ---
             elif cmd == "stealth":
