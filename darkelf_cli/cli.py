@@ -102,17 +102,16 @@ SEARCH_ENDPOINTS = [
     "https://duckduckgo.com/lite/",
 ]
 
+
 def run(self, session=None):
     console.print("[bold green]Darkelf CLI Browser[/bold green]\n")
-    
+
     if session is None:
         session = requests.Session()
 
     while True:
         try:
-            cmd = Prompt.ask(
-                "[bold magenta]darkelf[/bold magenta] " "(search, open, quit)"
-            ).strip()
+            cmd = Prompt.ask("[bold magenta]darkelf[/bold magenta] (search, open, quit)").strip()
 
             if cmd in ("quit", "exit"):
                 break
@@ -179,9 +178,7 @@ def setup_logging(debug=False):
     # --- Base level ---
     level = logging.DEBUG if debug else logging.CRITICAL
 
-    logging.basicConfig(
-        level=level, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-    )
+    logging.basicConfig(level=level, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 
     # --- Silence noisy libraries ---
     noisy_libs = [
@@ -227,6 +224,7 @@ REFERERS = [
     "https://example.com/",
 ]
 
+
 def random_headers(extra_stealth_options=None):
     headers = {
         "User-Agent": secrets.choice(USER_AGENTS),
@@ -257,9 +255,7 @@ def random_headers(extra_stealth_options=None):
 
         if extra_stealth_options.get("spoof_platform"):
             if secrets.randbelow(2) == 0:
-                headers["Sec-CH-UA-Platform"] = secrets.choice(
-                    ["Linux", "Windows", "macOS"]
-                )
+                headers["Sec-CH-UA-Platform"] = secrets.choice(["Linux", "Windows", "macOS"])
 
     return headers
 
@@ -272,9 +268,7 @@ def random_delay(extra_stealth_options=None):
     time.sleep(base)
 
 
-def fetch_with_requests(
-    url, session=None, extra_stealth_options=None, debug=False, method="GET", data=None
-):
+def fetch_with_requests(url, session=None, extra_stealth_options=None, debug=False, method="GET", data=None):
     headers = random_headers(extra_stealth_options)
     try:
         random_delay(extra_stealth_options)
@@ -282,12 +276,7 @@ def fetch_with_requests(
         if extra_stealth_options and extra_stealth_options.get("session_isolation"):
             req_session = requests.Session()
         if method == "POST":
-            resp = req_session.post(
-                url,
-                data=data,
-                headers=headers,
-                timeout=30
-            )
+            resp = req_session.post(url, data=data, headers=headers, timeout=30)
         else:
             resp = req_session.get(url, headers=headers, timeout=30)
         resp.raise_for_status()
@@ -297,9 +286,7 @@ def fetch_with_requests(
             console.print("[DEBUG] Request Headers:", headers)
             console.print("[DEBUG] Response Status:", resp.status_code)
             console.print("[DEBUG] Response Headers:", dict(resp.headers))
-            console.print(
-                "[DEBUG] Raw HTML preview:\n", resp.text[:2000], "\n[END DEBUG]\n"
-            )
+            console.print("[DEBUG] Raw HTML preview:\n", resp.text[:2000], "\n[END DEBUG]\n")
         return resp.text, headers
     except requests.exceptions.RequestException as e:
         console.print(f"[red]Network error during fetch: {e}[/red]")
@@ -330,7 +317,7 @@ def parse_ddg_lite_results(soup):
 
     return results if results else "no_results"
 
-        
+
 def fallback_search(query, extra_stealth_options=None):
     engines = [
         ("DDG Lite", f"https://duckduckgo.com/lite/?q={quote_plus(query)}"),
@@ -356,6 +343,7 @@ def fallback_search(query, extra_stealth_options=None):
             console.print(f"[red]{name} failed:[/red] {e}")
 
     return None, None
+
 
 def fetch_and_display(url, session=None, extra_stealth_options=None, debug=True):
     parsed = urlparse(url)
@@ -416,10 +404,7 @@ def fetch_and_display(url, session=None, extra_stealth_options=None, debug=True)
     # =========================
     SEARCH_ENGINES = ["duckduckgo", "duckduckgogg", "brave"]
 
-    is_search = (
-        any(engine in parsed.netloc for engine in SEARCH_ENGINES)
-        and "q=" in parsed.query
-    )
+    is_search = any(engine in parsed.netloc for engine in SEARCH_ENGINES) and "q=" in parsed.query
 
     # =========================
     # SEARCH RESULT PARSING
@@ -472,6 +457,7 @@ def fetch_and_display(url, session=None, extra_stealth_options=None, debug=True)
         if not found:
             console.print("  ▪ No readable content found.")
 
+
 def get_terminal_size():
     return shutil.get_terminal_size((80, 20))
 
@@ -491,6 +477,7 @@ def paginate_output(text):
         if i < len(lines):
             console.print("[bold green]>>[/bold green] ", end="")
             input("\n-- More -- Press Enter to continue...")
+
 
 def cli_browser():
     setup_logging()
@@ -537,9 +524,7 @@ def ensure_strong_entropy(min_bytes=256):
 
 
 # 2. === Session Isolation Wrapper ===
-def fetch_with_isolated_session(
-    url, method="GET", headers=None, data=None, timeout=30
-):
+def fetch_with_isolated_session(url, method="GET", headers=None, data=None, timeout=30):
     session = requests.Session()  # New session per call
 
     try:
@@ -664,10 +649,7 @@ class Page:
                 self.title = title_tag.get_text(strip=True)
 
             # --- HEADINGS ---
-            self.headings = [
-                h.get_text(strip=True)
-                for h in soup.find_all(["h1", "h2", "h3"])
-            ]
+            self.headings = [h.get_text(strip=True) for h in soup.find_all(["h1", "h2", "h3"])]
 
             fancy_divider = "═" * 40
             self.lines = []
@@ -684,7 +666,7 @@ class Page:
                     link_tag = result.find("a", href=True)
 
                     if title:
-                        self.lines.append((f"[{idx+1}]", title.get_text(strip=True)))
+                        self.lines.append((f"[{idx + 1}]", title.get_text(strip=True)))
 
                     if snippet:
                         self.lines.append(("", snippet.get_text(strip=True)))
@@ -701,7 +683,7 @@ class Page:
                 for idx, p in enumerate(soup.find_all("p")):
                     text = p.get_text(strip=True)
                     if text:
-                        self.lines.append((f"[{idx+1}]", text))
+                        self.lines.append((f"[{idx + 1}]", text))
                         self.lines.append((None, fancy_divider))
 
                 if not self.lines:
@@ -709,7 +691,7 @@ class Page:
                     paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
 
                     for idx, paragraph in enumerate(paragraphs):
-                        self.lines.append((f"[{idx+1}]", paragraph))
+                        self.lines.append((f"[{idx + 1}]", paragraph))
                         self.lines.append((None, fancy_divider))
 
             if self.lines and self.lines[-1][1] == fancy_divider:
@@ -794,9 +776,7 @@ class DarkelfCLIBrowser:
             self.console.print(f"[green]Theme set to {name}.[/green]")
             self.needs_render = True
         else:
-            self.console.print(
-                f"[red]Theme '{name}' not found. Available: {', '.join(DARKELF_THEMES.keys())}[/red]"
-            )
+            self.console.print(f"[red]Theme '{name}' not found. Available: {', '.join(DARKELF_THEMES.keys())}[/red]")
 
     def get_terminal_size(self):
         return shutil.get_terminal_size((80, 24))
@@ -821,9 +801,7 @@ class DarkelfCLIBrowser:
                 )
             if line.strip() == "═" * 40 or line.strip() == fancy_divider:
                 wrapped.append(Text(" ", style=self.theme["content"]))
-                wrapped.append(
-                    Text(fancy_divider, style=f"bold {self.theme['divider']}")
-                )
+                wrapped.append(Text(fancy_divider, style=f"bold {self.theme['divider']}"))
                 wrapped.append(Text(" ", style=self.theme["content"]))
                 continue
             if not line.strip():
@@ -854,12 +832,7 @@ class DarkelfCLIBrowser:
                     continue
                 except Exception as e:
                     print(f"[warn] {e}")
-            wrapped.extend(
-                [
-                    Text(t, style=self.theme["content"])
-                    for t in textwrap.wrap(line, width=width) or [""]
-                ]
-            )
+            wrapped.extend([Text(t, style=self.theme["content"]) for t in textwrap.wrap(line, width=width) or [""]])
         return wrapped
 
     def do_search(self):
@@ -878,18 +851,14 @@ class DarkelfCLIBrowser:
 
     def next_match(self):
         if self.search_matches:
-            self.current_match_idx = (self.current_match_idx + 1) % len(
-                self.search_matches
-            )
+            self.current_match_idx = (self.current_match_idx + 1) % len(self.search_matches)
             idx = self.search_matches[self.current_match_idx]
             self.scroll = idx // self.page_size
             self.needs_render = True
 
     def prev_match(self):
         if self.search_matches:
-            self.current_match_idx = (self.current_match_idx - 1) % len(
-                self.search_matches
-            )
+            self.current_match_idx = (self.current_match_idx - 1) % len(self.search_matches)
             idx = self.search_matches[self.current_match_idx]
             self.scroll = idx // self.page_size
             self.needs_render = True
@@ -899,7 +868,7 @@ class DarkelfCLIBrowser:
             console.print("[yellow]No headings found on this page.[/yellow]")
             return
         for i, heading in enumerate(self.current_page.headings):
-            console.print(f"{i+1}. {heading}")
+            console.print(f"{i + 1}. {heading}")
         num = input("Jump to heading #: ").strip()
         if num.isdigit():
             idx = int(num) - 1
@@ -922,9 +891,7 @@ class DarkelfCLIBrowser:
             output_lines.append(line)
         content = "\n".join(output_lines)
         md = Markdown(content)
-        self.console.print(
-            Panel(md, title="Markdown", border_style="white", width=width, expand=True)
-        )
+        self.console.print(Panel(md, title="Markdown", border_style="white", width=width, expand=True))
 
     def render(self):
         # DO NOT clear or print blank lines here!
@@ -964,11 +931,7 @@ class DarkelfCLIBrowser:
             )
         )
 
-        total_lines = (
-            len(self.current_page.lines)
-            if self.current_page and self.current_page.lines
-            else 0
-        )
+        total_lines = len(self.current_page.lines) if self.current_page and self.current_page.lines else 0
         if total_lines:
             start = self.scroll * self.page_size
             end = min(start + self.page_size, total_lines)
@@ -994,42 +957,26 @@ class DarkelfCLIBrowser:
         )
 
         if self.current_page and self.current_page.lines:
-            total_pages = max(
-                1, (len(self.current_page.lines) + self.page_size - 1) // self.page_size
-            )
+            total_pages = max(1, (len(self.current_page.lines) + self.page_size - 1) // self.page_size)
             current_page = self.scroll + 1
             status = f"-- Page {current_page}/{total_pages} --"
-            self.console.print(
-                Align.right(
-                    Text(status, style=f"bold {self.theme['footer_text']}"), width=width
-                )
-            )
+            self.console.print(Align.right(Text(status, style=f"bold {self.theme['footer_text']}"), width=width))
 
         self.render_footer(width)
 
         if self.tabs:
-            tabs_panel = Text.from_markup(
-                f"[bold {self.theme['highlight']}]Open Tabs:[/bold {self.theme['highlight']}] "
-            )
+            tabs_panel = Text.from_markup(f"[bold {self.theme['highlight']}]Open Tabs:[/bold {self.theme['highlight']}] ")
             for i, tab in enumerate(self.tabs):
                 mark = "*" if i == self.active_tab else " "
                 tab_title = getattr(tab, "title", getattr(tab, "url", "Tab"))
-                style = (
-                    self.theme["highlight"]
-                    if i == self.active_tab
-                    else self.theme["footer_text"]
-                )
-                tabs_panel.append(f"{i+1}. {tab_title} {mark}  ", style=style)
+                style = self.theme["highlight"] if i == self.active_tab else self.theme["footer_text"]
+                tabs_panel.append(f"{i + 1}. {tab_title} {mark}  ", style=style)
             self.console.print(Align.center(tabs_panel, width=width))
 
     def render_footer(self, width):
-        self.console.print(
-            Rule(style=self.theme["divider"], characters="─"), width=width
-        )
+        self.console.print(Rule(style=self.theme["divider"], characters="─"), width=width)
         footer = Text()
-        footer.append(
-            "[↑/↓/w/s/j/k] Prev/Next Page  ", style=f"bold {self.theme['footer_text']}"
-        )
+        footer.append("[↑/↓/w/s/j/k] Prev/Next Page  ", style=f"bold {self.theme['footer_text']}")
         footer.append("[O] Open Link  ", style=f"bold {self.theme['footer_text']}")
         footer.append("[U] URL  ", style=f"bold {self.theme['footer_text']}")
         footer.append("[B] Back  ", style=f"bold {self.theme['footer_text']}")
@@ -1073,11 +1020,7 @@ class DarkelfCLIBrowser:
             ("Darkelf CLI Browser", self.theme["header_text"]),
             f" | Tab {self.active_tab + 1}/{len(self.tabs)}\n",
             (
-                (
-                    self.current_page.title or self.current_page.url
-                    if self.current_page
-                    else "No Page Loaded"
-                ),
+                (self.current_page.title or self.current_page.url if self.current_page else "No Page Loaded"),
                 self.theme["link"],
             ),
         )
@@ -1094,9 +1037,7 @@ class DarkelfCLIBrowser:
         helptext = Text()
 
         helptext.append(
-            Text.from_markup(
-                f"\n[{self.theme['header_text']}]Darkelf CLI Browser Help[/{self.theme['header_text']}]\n\n"
-            )
+            Text.from_markup(f"\n[{self.theme['header_text']}]Darkelf CLI Browser Help[/{self.theme['header_text']}]\n\n")
         )
 
         helptext.append(Text("[↑/↓/w/s/j/k] : Scroll page up/down\n"))
@@ -1116,17 +1057,9 @@ class DarkelfCLIBrowser:
         helptext.append(Text("[?]           : Show this help\n"))
         helptext.append(Text("[Q]           : Quit browser\n"))
 
-        helptext.append(
-            Text.from_markup(
-                f"\n[bold {self.theme['highlight']}]Tips:[/bold {self.theme['highlight']}]\n"
-            )
-        )
+        helptext.append(Text.from_markup(f"\n[bold {self.theme['highlight']}]Tips:[/bold {self.theme['highlight']}]\n"))
 
-        helptext.append(
-            Text(
-                "Use [O] to open links, [L] to inspect all links, and [/] to search inside pages.\n"
-            )
-        )
+        helptext.append(Text("Use [O] to open links, [L] to inspect all links, and [/] to search inside pages.\n"))
 
         self.console.print(
             Panel(
@@ -1156,11 +1089,7 @@ class DarkelfCLIBrowser:
 
     def render_links(self, width):
         # Defensive patch: ensure self.current_page and .links are valid and non-empty
-        if (
-            not self.current_page
-            or not hasattr(self.current_page, "links")
-            or not self.current_page.links
-        ):
+        if not self.current_page or not hasattr(self.current_page, "links") or not self.current_page.links:
             header_text = Text.assemble(
                 ("Darkelf CLI Browser", self.theme["header_text"]),
                 " | No Tab\n",
@@ -1217,16 +1146,12 @@ class DarkelfCLIBrowser:
                 link_text.append(label + "\n", style=f"bold {self.theme['highlight']}")
                 link_text.append(href, style=f"{self.theme['link']} link {href}")
                 table.add_row(link_text)
-                table.add_row(
-                    Text(fancy_divider, style=f"bold {self.theme['divider']}")
-                )
+                table.add_row(Text(fancy_divider, style=f"bold {self.theme['divider']}"))
         else:
             table.add_row(Text("No links found", style=self.theme["highlight"]))
         self.console.print(table)
         self.render_footer(width)
-        self.console.print(
-            "\n[O] Open link by number | [E] Export links | Any key to return."
-        )
+        self.console.print("\n[O] Open link by number | [E] Export links | Any key to return.")
 
         key = get_key().lower()
         if key == "o":
@@ -1295,9 +1220,7 @@ class DarkelfCLIBrowser:
                 self.tabs[self.active_tab] = self.current_page
             self.needs_render = True
         except Exception as e:
-            self.current_page = Page(
-                "data:text/html,<html><body><p>Failed to load page</p></body></html>"
-            )
+            self.current_page = Page("data:text/html,<html><body><p>Failed to load page</p></body></html>")
             self.current_page.error = str(e)
             self.needs_render = True
 
@@ -1315,9 +1238,7 @@ class DarkelfCLIBrowser:
                 qs = urlparse(href).query
                 resolved = parse_qs(qs).get("uddg", [""])[0]
                 if not resolved:
-                    console.print(
-                        f"[red]DuckDuckGo redirect did not resolve for {href}[/red]"
-                    )
+                    console.print(f"[red]DuckDuckGo redirect did not resolve for {href}[/red]")
                     return
                 href = unquote(resolved)
             if not href.startswith("http"):
@@ -1356,7 +1277,7 @@ class DarkelfCLIBrowser:
         console.print("[bold magenta]Open Tabs:[/bold magenta]")
         for i, tab in enumerate(self.tabs):
             mark = "*" if i == self.active_tab else " "
-            console.print(f" {i+1}. {tab.url} {mark}")
+            console.print(f" {i + 1}. {tab.url} {mark}")
         user_input = input("\nEnter tab number or 'x' to close tab: ").strip()
         if user_input.lower() == "x":
             self.tabs.pop(self.active_tab)
@@ -1382,9 +1303,7 @@ class DarkelfCLIBrowser:
         if query:
             encoded_query = requests.utils.quote(query)
 
-            url = (
-                f"https://html.duckduckgo.com/html/?q={encoded_query}"
-            )
+            url = f"https://html.duckduckgo.com/html/?q={encoded_query}"
 
             self.visit(url)
 
@@ -1420,9 +1339,7 @@ class DarkelfCLIBrowser:
             # --- Robust ESC key handling: accept any sequence starting with ESC ---
             if key.startswith("\x1b") and key not in ("\x1b[A", "\x1b[B"):
                 # Only treat ESC *not* up or down as quit/wipe!
-                self.console.print(
-                    f"[bold {self.theme['highlight']}]Exiting browser...[/bold {self.theme['highlight']}]"
-                )
+                self.console.print(f"[bold {self.theme['highlight']}]Exiting browser...[/bold {self.theme['highlight']}]")
                 self.quit = True
                 break
             elif key == "\x1b[A" or key == "w" or key == "k":
@@ -1433,8 +1350,7 @@ class DarkelfCLIBrowser:
                 if self.current_page and self.current_page.lines:
                     total_pages = max(
                         1,
-                        (len(self.current_page.lines) + self.page_size - 1)
-                        // self.page_size,
+                        (len(self.current_page.lines) + self.page_size - 1) // self.page_size,
                     )
                     if self.scroll + 1 < total_pages:
                         self.scroll += 1
@@ -1597,6 +1513,7 @@ def run_browser_mode():
     browser = DarkelfCLIBrowser()
     browser.run()
 
+
 def main():
     if "--browser" in sys.argv:
         run_browser_mode()
@@ -1628,6 +1545,7 @@ def main_menu():
 
         else:
             console.print("[red]Invalid option[/red]")
+
 
 if __name__ == "__main__":
     main()
